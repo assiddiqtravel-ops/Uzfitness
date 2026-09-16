@@ -1,0 +1,20 @@
+"""TEKSHIRILGAN mashq media havolalari (ixtiyoriy).
+
+Bu faylni `exercise_media.py` deb nusxalab, mashq texnikasini ko'rsatuvchi
+ISHONCHLI va O'ZINGIZ TEKSHIRGAN video/rasm/animatsiya havolalarini qo'shing.
+Bot ushbu havolalarni mashq yonida "🎬 Texnikani ko'rish" tugmasi sifatida
+ko'rsatadi.
+
+MUHIM: Bu yerga faqat siz ochib, to'g'ri ekanini tasdiqlagan havolalarni
+kiriting. Bot hech qachon mavjud bo'lmagan URL o'ylab topmaydi.
+
+Kalitlar — app/data/exercises.py dagi Exercise.key qiymatlari:
+  bodyweight_squat, lunge, glute_bridge, leg_press, pushup, knee_pushup,
+  db_bench_press, db_row, superman, lat_pulldown, db_shoulder_press, db_curl,
+  plank, dead_bug
+"""
+
+EXERCISE_MEDIA = {
+    # "bodyweight_squat": "https://... (siz tekshirgan havola)",
+    # "pushup": "https://...",
+}

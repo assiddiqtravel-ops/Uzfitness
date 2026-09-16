@@ -1,0 +1,16 @@
+services:
+  bot:
+    build: .
+    container_name: uzfit-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Ma'lumotlar bazasi container qayta ishga tushganda saqlanadi (persistent)
+      - uzfit_data:/app/data
+    # Webhook rejimida portni oching (RUN_MODE=webhook bo'lsa):
+    # ports:
+    #   - "8080:8080"
+
+volumes:
+  uzfit_data:
