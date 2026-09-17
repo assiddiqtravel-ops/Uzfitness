@@ -11,6 +11,32 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "UzFit AI" }]
 
+# Runtime bog'liqliklar — requirements.txt bilan sinxron. Bu ro'yxat `pip install .`
+# (masalan Render'ning standart build'i) uchun ham zarur: aks holda drayver/kutubxonalar
+# o'rnatilmaydi (masalan asyncpg yo'qligida SQLAlchemy postgresql+asyncpg dialektini
+# yuklay olmaydi).
+dependencies = [
+    "aiogram==3.13.1",
+    "SQLAlchemy==2.0.36",
+    "aiosqlite==0.20.0",
+    "alembic==1.13.3",
+    "pydantic==2.9.2",
+    "pydantic-settings==2.5.2",
+    "APScheduler==3.10.4",
+    "matplotlib==3.9.2",
+    "python-dotenv==1.0.1",
+    "openai==1.51.0",
+    "anthropic==0.36.2",
+    "asyncpg==0.30.0",
+    "redis==5.0.8",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==8.3.3",
+    "pytest-asyncio==0.24.0",
+]
+
 [tool.setuptools.packages.find]
 include = ["app*"]
 
