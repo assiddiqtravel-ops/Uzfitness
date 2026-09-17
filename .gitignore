@@ -38,3 +38,7 @@ tmp/
 # IDE
 .idea/
 .vscode/
+
+# Claude Code local settings (self-modification klassifikatori commit qilishga yo'l qo'ymaydi;
+# xohlasangiz qo'lda commit qiling: git add -f .claude/settings.json)
+.claude/settings.json
