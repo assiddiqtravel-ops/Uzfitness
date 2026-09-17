@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -72,11 +73,13 @@ async def _run_webhook(bot: Bot, dp: Dispatcher, settings: Settings, reminders: 
     handler.register(app, path=settings.webhook_path)
     setup_application(app, dp, bot=bot)
 
+    # Render/Railway kabi platformalar PORT env beradi — uni ustun qo'yamiz
+    port = int(os.environ.get("PORT", settings.webhook_port))
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, host=settings.webhook_host, port=settings.webhook_port)
+    site = web.TCPSite(runner, host=settings.webhook_host, port=port)
     await site.start()
-    logger.info("Webhook serveri: %s:%s", settings.webhook_host, settings.webhook_port)
+    logger.info("Webhook serveri: %s:%s", settings.webhook_host, port)
     try:
         await asyncio.Event().wait()  # cheksiz kutish
     finally:

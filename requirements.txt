@@ -18,3 +18,8 @@ anthropic==0.36.2
 # Test
 pytest==8.3.3
 pytest-asyncio==0.24.0
+
+# Ixtiyoriy: bulutli/serverless deploy uchun (Postgres va Redis)
+# SQLite bilan lokal/VPS da SHART EMAS, lekin Vercel/serverless da kerak bo'ladi.
+asyncpg==0.29.0            # Postgres async driver (DATABASE_URL=postgresql+asyncpg://...)
+redis==5.0.8              # FSM uchun RedisStorage (REDIS_URL o'rnatilganda)

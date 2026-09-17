@@ -1,0 +1,47 @@
+# Render Blueprint — UzFit AI
+# Bu fayl Render'da botni "Background Worker" sifatida ishga tushiradi.
+# Worker DOIMIY ishlaydi: polling, SQLite (persistent disk) va reminderlar
+# to'liq ishlaydi.
+#
+# Render'da: New + -> Blueprint -> ushbu repo'ni tanlang. Keyin BOT_TOKEN va
+# boshqa "sync: false" env'larni Dashboard'da kiriting.
+#
+# Eslatma: Background Worker va Disk — Render'ning PULLIK rejalarida
+# (masalan "starter", ~$7/oy). Bepul variant uchun DEPLOY_RENDER.md ga qarang
+# (webhook + Web Service + bepul Postgres).
+
+services:
+  - type: worker
+    name: uzfit-ai
+    runtime: python
+    plan: starter
+    region: frankfurt          # o'zingizga yaqin regionni tanlang
+    branch: claude/uzfit-ai-telegram-bot-hitfyw
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app.main
+    autoDeploy: true
+    envVars:
+      - key: BOT_TOKEN
+        sync: false            # Dashboard'da kiriting (maxfiy)
+      - key: AI_PROVIDER
+        value: none
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: gpt-4o-mini
+      - key: ADMIN_IDS
+        sync: false
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///data/uzfit.db
+      - key: TIMEZONE
+        value: Asia/Tashkent
+      - key: RUN_MODE
+        value: polling
+      - key: LOG_LEVEL
+        value: INFO
+    disk:
+      name: uzfit-data
+      mountPath: /opt/render/project/src/data   # SQLite shu yerda saqlanadi
+      sizeGB: 1
