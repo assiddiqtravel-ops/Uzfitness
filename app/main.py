@@ -20,6 +20,25 @@ from app.utils.logging_config import get_logger, setup_logging
 logger = get_logger(__name__)
 
 
+def _log_db_target(database_url: str) -> None:
+    """Ma'lumotlar bazasi ulanish manzilini logga yozadi (parolsiz).
+
+    Bu deploy loglarida qaysi host/user/baza ishlatilayotganini ko'rsatadi —
+    DATABASE_URL da yashirin xato (ortiqcha bo'shliq, noto'g'ri host) darhol
+    ko'rinadi. Parol hech qachon logga tushmaydi.
+    """
+    try:
+        from sqlalchemy.engine import make_url
+
+        u = make_url(database_url)
+        logger.info(
+            "DB ulanish: driver=%s host=%s port=%s user=%s db=%s (parol maskalangan)",
+            u.drivername, u.host, u.port, u.username, u.database,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("DATABASE_URL ni tahlil qilib bo'lmadi: %s", type(exc).__name__)
+
+
 def create_dispatcher(settings: Settings) -> Dispatcher:
     """Dispatcher ni sozlaydi: middlewarelar, routerlar, workflow data."""
     dp = Dispatcher(storage=MemoryStorage())
@@ -61,11 +80,19 @@ async def _run_webhook(bot: Bot, dp: Dispatcher, settings: Settings, reminders: 
         )
 
     reminders.start(timezone=settings.timezone)
-    await bot.set_webhook(
-        url=base_url.rstrip("/") + settings.webhook_path,
-        secret_token=settings.webhook_secret or None,
-        drop_pending_updates=True,
-    )
+    try:
+        await bot.set_webhook(
+            url=base_url.rstrip("/") + settings.webhook_path,
+            secret_token=settings.webhook_secret or None,
+            drop_pending_updates=True,
+        )
+    except Exception as exc:  # noqa: BLE001 — startup diagnostikasi uchun
+        logger.error(
+            "Webhook o'rnatilmadi [%s]: %s. BOT_TOKEN to'g'riligini (BotFather) va "
+            "WEBHOOK_SECRET faqat [A-Za-z0-9_-] belgilardan iboratligini tekshiring.",
+            type(exc).__name__, exc,
+        )
+        raise
     logger.info("Webhook o'rnatildi: %s%s", base_url.rstrip("/"), settings.webhook_path)
 
     app = web.Application()
@@ -110,7 +137,18 @@ async def async_main() -> None:
     logger.info("UzFit AI ishga tushmoqda...")
     logger.info("AI provayder: %s (yoqilgan: %s)", settings.ai_provider, settings.ai_enabled)
 
-    await init_db(settings.database_url)
+    _log_db_target(settings.database_url)
+    try:
+        await init_db(settings.database_url)
+    except Exception as exc:  # noqa: BLE001 — startup diagnostikasi uchun
+        logger.error(
+            "Ma'lumotlar bazasiga ulanib bo'lmadi [%s]: %s. "
+            "DATABASE_URL (host/user/parol) va baza mintaqasini tekshiring; "
+            "parol noto'g'ri bo'lsa — Render'da baza 'Recovery' orqali sbros qiling.",
+            type(exc).__name__, exc,
+        )
+        raise
+    logger.info("Ma'lumotlar bazasi tayyor (jadvallar tekshirildi).")
 
     bot = Bot(
         token=settings.bot_token,

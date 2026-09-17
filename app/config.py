@@ -59,6 +59,22 @@ class Settings(BaseSettings):
             return "none"
         return v
 
+    @field_validator("webhook_secret")
+    @classmethod
+    def _sanitize_webhook_secret(cls, v: str) -> str:
+        """Telegram `secret_token` faqat [A-Za-z0-9_-], 1..256 belgidan iborat.
+
+        Foydalanuvchi WEBHOOK_SECRET ga bo'sh joy/kirill/tinish belgilarini kiritsa,
+        `set_webhook` butun deploy'ni yiqitadi. Xavfsizroq yo'l — noto'g'ri sekretni
+        o'chirib qo'yish: webhook sekretsiz ham ishlaydi.
+        """
+        import re
+
+        v = (v or "").strip()
+        if v and not re.fullmatch(r"[A-Za-z0-9_-]{1,256}", v):
+            return ""
+        return v
+
     @field_validator("database_url")
     @classmethod
     def _normalize_database_url(cls, v: str) -> str:
