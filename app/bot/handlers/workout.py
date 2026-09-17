@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery, Message
 
 from app.bot.handlers._helpers import require_profile_or_prompt
 from app.bot.keyboards import inline, reply
+from app.data import exercises as ex_data
 from app.database.repositories import workout_repo
 from app.services import workout_service
 from app.utils.logging_config import get_logger
@@ -86,6 +87,40 @@ async def toggle_exercise(callback: CallbackQuery, session) -> None:
         # xabar o'zgarmagan bo'lsa Telegram xato beradi — e'tiborsiz qoldiramiz
         pass
     await callback.answer("✅ Bajarildi" if ex.is_done else "⬜ Bekor qilindi")
+
+
+@router.callback_query(F.data.startswith("wgif:"))
+async def show_exercise_gif(callback: CallbackQuery) -> None:
+    """Mashq texnikasi animatsiyasini (GIF) chatga yuboradi."""
+    try:
+        key = callback.data.split(":", 1)[1]
+    except IndexError:
+        await callback.answer("Eskirgan tugma.")
+        return
+
+    exercise = ex_data.get_exercise_by_key(key)
+    if exercise is None:
+        await callback.answer("Mashq topilmadi.")
+        return
+
+    file_url = ex_data.get_demo_file_url(exercise)
+    page_url = ex_data.get_demo_url(exercise)
+    await callback.answer("🎬 Animatsiya yuborilmoqda...")
+
+    caption = f"🎬 <b>{exercise.name}</b> — texnika"
+    # Avval animatsiyani to'g'ridan-to'g'ri chatga yuborishga urinamiz
+    if file_url:
+        try:
+            await callback.message.answer_animation(animation=file_url, caption=caption)
+            return
+        except Exception as exc:  # noqa: BLE001 — Telegram yuklay olmasa, havolaga o'tamiz
+            logger.warning("Animatsiya yuborilmadi [%s], havola yuboramiz.", type(exc).__name__)
+
+    # Zaxira: manba havolasini matn sifatida yuboramiz
+    if page_url:
+        await callback.message.answer(f"{caption}\n{page_url}")
+    else:
+        await callback.message.answer("Bu mashq uchun animatsiya hozircha yo'q.")
 
 
 @router.callback_query(F.data.startswith("wdone:"))

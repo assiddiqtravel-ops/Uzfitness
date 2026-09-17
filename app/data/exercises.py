@@ -290,6 +290,40 @@ def get_demo_url(exercise: Exercise) -> Optional[str]:
     return EXERCISE_MEDIA.get(exercise.key) or exercise.demo_url
 
 
+def get_demo_file_url(exercise: Exercise) -> Optional[str]:
+    """Animatsiyani chatga to'g'ridan-to'g'ri yuborish uchun media fayl havolasi.
+
+    Wikimedia Commons 'File:' sahifasidan 'Special:FilePath' (to'g'ridan-to'g'ri
+    faylga redirect) havolasini yasaydi — Telegram uni GIF/animatsiya sifatida
+    yuklab, chatda ko'rsata oladi. Agar havola allaqachon to'g'ridan-to'g'ri media
+    bo'lsa (.gif/.mp4/.webm), o'zini qaytaradi. Aks holda (masalan YouTube) None —
+    bunda faqat havola ko'rsatiladi, chatga animatsiya yuborilmaydi.
+    """
+    url = get_demo_url(exercise)
+    if not url:
+        return None
+    marker = "/wiki/File:"
+    if "commons.wikimedia.org" in url and marker in url:
+        filename = url.split(marker, 1)[1]
+        return "https://commons.wikimedia.org/wiki/Special:FilePath/" + filename
+    if url.lower().split("?")[0].endswith((".gif", ".mp4", ".webm")):
+        return url
+    return None
+
+
+# Nom/kalit bo'yicha tez qidiruv (sessiya mashqida faqat 'name' saqlanadi).
+_BY_KEY: Dict[str, Exercise] = {e.key: e for e in CATALOG}
+_BY_NAME: Dict[str, Exercise] = {e.name: e for e in CATALOG}
+
+
+def get_exercise_by_key(key: str) -> Optional[Exercise]:
+    return _BY_KEY.get(key)
+
+
+def get_exercise_by_name(name: str) -> Optional[Exercise]:
+    return _BY_NAME.get(name)
+
+
 def filter_exercises(
     location: str,
     equipment_list: Optional[List[str]] = None,

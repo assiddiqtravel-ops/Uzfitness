@@ -97,15 +97,23 @@ def confirm_kb() -> InlineKeyboardMarkup:
 
 # --- Mashg'ulot sessiyasi (mashqlarni belgilash) ---
 def workout_session_kb(session_id: int, exercises) -> InlineKeyboardMarkup:
-    """Har bir mashq uchun 'bajarildi' toggle tugmasi."""
+    """Har bir mashq uchun 'bajarildi' toggle tugmasi (+ animatsiya bo'lsa 🎬)."""
+    from app.data import exercises as ex_data
+
     builder = InlineKeyboardBuilder()
     for ex in exercises:
         mark = "✅" if ex.is_done else "⬜"
-        builder.button(
-            text=f"{mark} {ex.name}",
-            callback_data=f"wex:{session_id}:{ex.id}",
-        )
-    builder.adjust(1)
+        row = [
+            InlineKeyboardButton(
+                text=f"{mark} {ex.name}",
+                callback_data=f"wex:{session_id}:{ex.id}",
+            )
+        ]
+        cat = ex_data.get_exercise_by_name(ex.name)
+        if cat is not None and ex_data.get_demo_url(cat):
+            # Texnika animatsiyasi mavjud — kichik 🎬 tugma
+            row.append(InlineKeyboardButton(text="🎬", callback_data=f"wgif:{cat.key}"))
+        builder.row(*row)
     builder.row(
         InlineKeyboardButton(text="🏁 Yakunlash", callback_data=f"wdone:{session_id}")
     )
