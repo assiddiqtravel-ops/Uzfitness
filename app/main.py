@@ -53,18 +53,29 @@ async def _run_webhook(bot: Bot, dp: Dispatcher, settings: Settings, reminders: 
     from aiohttp import web
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-    if not settings.webhook_url:
-        raise RuntimeError("RUN_MODE=webhook uchun WEBHOOK_URL majburiy.")
+    # WEBHOOK_URL berilmagan bo'lsa, Render bergan RENDER_EXTERNAL_URL dan olamiz
+    base_url = settings.webhook_url.strip() or os.environ.get("RENDER_EXTERNAL_URL", "").strip()
+    if not base_url:
+        raise RuntimeError(
+            "RUN_MODE=webhook uchun WEBHOOK_URL (yoki Render'da RENDER_EXTERNAL_URL) kerak."
+        )
 
     reminders.start(timezone=settings.timezone)
     await bot.set_webhook(
-        url=settings.webhook_url.rstrip("/") + settings.webhook_path,
+        url=base_url.rstrip("/") + settings.webhook_path,
         secret_token=settings.webhook_secret or None,
         drop_pending_updates=True,
     )
-    logger.info("Webhook o'rnatildi: %s", settings.webhook_path)
+    logger.info("Webhook o'rnatildi: %s%s", base_url.rstrip("/"), settings.webhook_path)
 
     app = web.Application()
+
+    async def _health(request):  # Render health-check / uyg'otish uchun
+        return web.Response(text="UzFit AI OK")
+
+    app.router.add_get("/", _health)
+    app.router.add_get("/healthz", _health)
+
     handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,

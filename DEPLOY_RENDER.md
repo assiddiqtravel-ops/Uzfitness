@@ -51,23 +51,30 @@ Bepul **Web Service** ishlatiladi. Bepul rejada:
    URL ni async formatga o'tkazing:
    `postgresql+asyncpg://user:pass@host/db`
 2. Render → **New +** → **Web Service** → repozitoriyni tanlang. Sozlamalar:
-   - **Runtime:** Python
+   - **Root Directory:** bo'sh qoldiring
+   - **Runtime / Language:** Python 3
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `python -m app.main`
+   - **Instance Type:** **Free**
 3. **Environment** ga quyidagilarni qo'shing:
    ```
    BOT_TOKEN=<token>
    RUN_MODE=webhook
-   WEBHOOK_URL=https://<sizning-service>.onrender.com
    WEBHOOK_SECRET=<uzun-tasodifiy-satr>
    DATABASE_URL=postgresql+asyncpg://user:pass@host/db
    TIMEZONE=Asia/Tashkent
    ```
-   > `WEBHOOK_URL` — Render bergan xizmat manzili. `PORT` ni Render avtomatik
-   > beradi, kod uni o'zi oladi (qo'lda kiritmang).
-4. Deploy tugagach, bot avtomatik `setWebhook` chaqiradi (kod `WEBHOOK_URL` +
-   `/webhook` ga o'rnatadi). Loglarda `Webhook o'rnatildi` chiqadi.
-5. Telegram'da `/start` yuboring.
+   > `WEBHOOK_URL` ni kiritish **shart emas** — kod Render bergan
+   > `RENDER_EXTERNAL_URL` ni avtomatik oladi. `PORT` ham avtomatik.
+   > (Xohlasangiz `WEBHOOK_URL=https://<service>.onrender.com` ni qo'lda
+   > qo'shsangiz ham bo'ladi.)
+4. Deploy tugagach, bot avtomatik `setWebhook` chaqiradi. Loglarda
+   `Webhook o'rnatildi: https://...onrender.com/webhook` chiqadi.
+5. Telegram'da `/start` yuboring. (Birinchi javob "uyqudan" uyg'onish uchun
+   ~30–60 soniya kechikishi mumkin.)
+
+> **Health-check:** xizmat `/` va `/healthz` da 200 qaytaradi, shuning uchun
+> Render uni "live" deb ko'radi.
 
 > **Postgres uchun** `asyncpg` allaqachon `requirements.txt` da bor.
 
