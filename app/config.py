@@ -59,6 +59,24 @@ class Settings(BaseSettings):
             return "none"
         return v
 
+    @field_validator("database_url")
+    @classmethod
+    def _normalize_database_url(cls, v: str) -> str:
+        """DATABASE_URL ni tozalaydi va Postgres uchun async driverga keltiradi.
+
+        Render/Heroku va boshqalar `postgres://` yoki `postgresql://` ko'rinishida
+        beradi; bizga async `postgresql+asyncpg://` kerak. Shuningdek atrofdagi
+        bo'shliqlar/yangi qatorni olib tashlaymiz (nusxa-joylashda bexosdan
+        qo'shilib, autentifikatsiyani buzishi mumkin). Bu tufayli Render bergan
+        URL ni o'zgartirmasdan yopishtirsa ham bo'ladi.
+        """
+        v = (v or "").strip()
+        if v.startswith("postgres://"):
+            v = "postgresql+asyncpg://" + v[len("postgres://"):]
+        elif v.startswith("postgresql://"):
+            v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+        return v
+
     @property
     def admin_ids(self) -> List[int]:
         """ADMIN_IDS ni intlar ro'yxatiga aylantiradi."""
